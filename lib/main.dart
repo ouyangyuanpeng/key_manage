@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const String appTitle = '密码管理器';
-    // 界面采用Material风格
+    // 界面采用Material风格 使用https://github.com/jonataslaw/getx
     return GetMaterialApp(
         title: appTitle,
         themeMode: ThemeMode.system,
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
             backgroundColor: Colors.white,
           ),
         ),
-        // 指定应用程序的主界面
+        // 路由
         getPages: Routes.pages);
   }
 }
