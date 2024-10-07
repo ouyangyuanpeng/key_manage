@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="密码管理器"
+        android:label="密码管理"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

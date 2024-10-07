@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:convert';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:key_manage/errors/errors.dart';
 
 class AesUtils {
 
@@ -24,7 +25,7 @@ class AesUtils {
 
     aesKey ??= defaultKey; // 如果没有提供密钥，使用默认密钥
     if (aesKey == null) {
-      throw Exception("AES 密钥未设置");
+      throw AesKeyNotSetException("AES 密钥未设置");
     }
 
     final key = encrypt.Key.fromBase64(aesKey);
@@ -38,7 +39,7 @@ class AesUtils {
   static String decryptPassword(String encryptedData, [String? aesKey]) {
     aesKey ??= defaultKey; // 如果没有提供密钥，使用默认密钥
     if (aesKey == null) {
-      throw Exception("AES 密钥未设置");
+      throw AesKeyNotSetException("AES 密钥未设置");
     }
 
     final key = encrypt.Key.fromBase64(aesKey);

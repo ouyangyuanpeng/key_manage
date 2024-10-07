@@ -85,4 +85,13 @@ class KeyModelHelper {
       );
     });
   }
+
+  Future<void> removeKey(int id) async {
+    final db = await database;
+    await db.delete(
+      'keys',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

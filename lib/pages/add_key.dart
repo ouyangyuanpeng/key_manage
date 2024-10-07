@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:key_manage/utils/aes_utils.dart';
 import 'package:key_manage/utils/password_generator.dart';
 import 'package:key_manage/model/key_model.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AddKey extends StatefulWidget {
   const AddKey({super.key});
@@ -24,15 +25,19 @@ class _AddKeyState extends State<AddKey> {
     String aesKey = keyController.text;
     String domain = domainController.text;
 
-    if (username.isEmpty || password.isEmpty || aesKey.isEmpty || domain.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('用户名、密码、厂商和密钥不能为空')),
+    if (username.isEmpty ||
+        password.isEmpty ||
+        aesKey.isEmpty ||
+        domain.isEmpty) {
+      Fluttertoast.showToast(
+        msg: '用户名、密码、厂商和密钥不能为空',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
       );
       return;
     }
 
     final encrypted = AesUtils.encryptPassword(password, aesKey);
-
 
     print('用户名: $username');
     print('密码: $encrypted');
@@ -43,11 +48,15 @@ class _AddKeyState extends State<AddKey> {
     passwordController.clear();
     keyController.clear();
     domainController.clear();
-    dbHelper.insertKey(KeyModel( null,domain, username, encrypted));
+    dbHelper.insertKey(KeyModel(null, domain, username, encrypted));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('提交成功')),
+    Fluttertoast.showToast(
+      msg: '提交成功',
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
     );
+
+
   }
 
   @override
@@ -62,7 +71,10 @@ class _AddKeyState extends State<AddKey> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('新增密码',style: TextStyle(color: Colors.white),),
+        title: const Text(
+          '新增密码',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: Center(
         child: Padding(

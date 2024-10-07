@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:key_manage/model/key_model.dart';
 import 'package:key_manage/routes/routes.dart';
 import 'package:key_manage/utils/aes_utils.dart';
+import 'package:key_manage/pages/home_left_drawer.dart';
 
 class MyHome extends StatelessWidget {
   const MyHome({super.key});
@@ -26,28 +27,14 @@ class MyHome extends StatelessWidget {
         // 右下角悬浮按钮
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.blue,
-          onPressed: (){
+          onPressed: () {
             Get.toNamed(Routes.add);
           },
           child: const Icon(Icons.add, color: Colors.white),
         ),
         // 悬浮按钮位置 配合底部应用栏使用
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-        drawer: NavigationDrawer(
-          onDestinationSelected: handleScreenChanged,
-          selectedIndex: null,
-          children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.fromLTRB(28, 16, 28, 10),
-              child: Divider(),
-            ),
-            NavigationDrawerDestination(
-              label: Text("设置"),
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-            )
-          ],
-        ),
+        drawer: const HomeLeftDrawer(),
         // 底部应用栏
         bottomNavigationBar: BottomAppBar(
           // 定义底部应用栏的形状，CircularNotchedRectangle=创建一个带有圆形缺口的底部导航栏，通常用于容纳 FloatingActionButton。
@@ -68,11 +55,6 @@ class MyHome extends StatelessWidget {
             ),
           ),
         ));
-  }
-
-  // 侧边栏导航
-  void handleScreenChanged(int selectedScreen) {
-    print(selectedScreen);
   }
 
   // 密钥输入框弹窗
@@ -147,6 +129,14 @@ class KeysController extends GetxController {
     // 可以在这里添加刷新逻辑
     keys.addAll(await dbHelper.getKeys());
   }
+
+  Future<void> removeKeys(int id) async {
+    await dbHelper.removeKey(id);
+    keys.clear();
+    keys.addAll(await dbHelper.getKeys());
+  }
+
+
 }
 
 class MyBody extends StatelessWidget {
@@ -168,6 +158,7 @@ class MyBody extends StatelessWidget {
                       leading: _getLetterIcon(k.domain),
                       title: Text(k.domain),
                       subtitle: Text(k.username),
+                      trailing: IconButton(icon: const Icon(Icons.delete, color: Colors.red),onPressed: ()=> KeysController.to.removeKeys(k.id!),),
                       onTap: () => showDialog(
                           context: context,
                           builder: (BuildContext context) => _PasswordDialog(
