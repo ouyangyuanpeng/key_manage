@@ -33,17 +33,8 @@ class MyApp extends StatelessWidget {
         ],
         locale: const Locale('zh', 'CN'),
         theme: ThemeData(
-          scaffoldBackgroundColor: Colors.white,
-          // 设置AppBar的默认主题色
-          appBarTheme: const AppBarTheme(
-              color: Colors.blue,
-              iconTheme: IconThemeData(color: Colors.white)),
+          colorSchemeSeed: Color(0xff6750a4),
           // 设置默认文本颜色为
-          textTheme:
-              const TextTheme(bodyMedium: TextStyle(color: Colors.black)),
-          drawerTheme: const DrawerThemeData(
-            backgroundColor: Colors.white,
-          ),
         ),
         // 路由
         getPages: Routes.pages);

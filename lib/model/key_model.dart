@@ -86,6 +86,19 @@ class KeyModelHelper {
     });
   }
 
+  Future<List<KeyModel>> searchKeys(String query) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'keys',
+      where: 'domain LIKE ? OR username LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+
+    return List.generate(maps.length, (i) {
+      return KeyModel.fromJson(maps[i]);
+    });
+  }
+
   Future<void> removeKey(int id) async {
     final db = await database;
     await db.delete(
