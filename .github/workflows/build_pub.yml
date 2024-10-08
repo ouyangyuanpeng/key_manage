@@ -12,8 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      matrix:
-        platform: [android, ios]  # 定义构建的目标平台
+       matrix:
+        include:
+          - target: Android
+            os: ubuntu-latest
+            artifact_name: release-Android
+            artifact_path: build/app/outputs/apk/release/*.apk
+          - target: iOS
+            os: macos-latest
+            cache_pod_key: ios-pods
+            cache_pod_path: ios/Pods
+            cache_pod_restore_keys_hash_file: ios/Podfile.lock
+            artifact_name: release-iOS
+            artifact_path: build/**/*.ipa
     env:
       FLUTTER_VERSION: 3.24.3
 
@@ -43,21 +54,23 @@ jobs:
           git config --global core.longpaths true
           flutter pub get
 
-      - name: Build ${{ matrix.platform }} app
+      - name: Build Android
         # 根据目标平台构建应用
+        if: matrix.target == 'Android'
         run: |
-          if [ "${{ matrix.platform }}" == "android" ]; then
-            flutter build apk --release  # 构建 Android APK
-          else
-            flutter build ios --release  # 构建 iOS 应用
-          fi
+         flutter build apk --release --split-per-abi
+      - name: Build iOS
+        if: matrix.target == 'iOS'
+        run: |
+          cd ios
+          pod install
+          cd ..
+          flutter build ios --release --no-codesign
+          cd build/ios/iphoneos
 
       - name: Upload Artifacts
         # 上传构建生成的安装包
         uses: actions/upload-artifact@v4
         with:
-          name: flutter-build
-          # 指定上传的文件路径
-          path: |
-            build/app/outputs/apk/release/app-release.apk  # Android APK
-            build/ios/iphoneos/*.ipa  # iOS IPA，确保在 macOS 上构建时生成
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
