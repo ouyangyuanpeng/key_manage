@@ -1,0 +1,86 @@
+name: Build Flutter App
+
+on:
+  # 当代码推送到 main 分支时触发工作流
+  push:
+    branches:
+      - main
+      
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # 在最新的 Ubuntu 环境中运行构建
+    runs-on: ubuntu-latest
+
+    strategy:
+       matrix:
+        include:
+          - target: Android
+            os: ubuntu-latest
+            artifact_name: release-Android
+            artifact_path: build/app/outputs/apk/release/*.apk
+          - target: iOS
+            os: macos-latest
+            cache_pod_key: ios-pods
+            cache_pod_path: ios/Pods
+            cache_pod_restore_keys_hash_file: ios/Podfile.lock
+            artifact_name: release-iOS
+            artifact_path: build/**/*.ipa
+    env:
+      FLUTTER_VERSION: 3.24.3
+
+    steps:
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 10
+
+      - name: Clone repository
+        # 检出当前仓库的代码
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        # 设置 Java 开发工具包（JDK），用于 Android 构建
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'liberica'
+          java-version: '17'  # 使用 Java 17
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+           channel: stable
+           flutter-version: ${{ env.FLUTTER_VERSION }}
+           cache: true
+      - run: flutter --version
+
+      - name: Flutter pub get
+        # 获取 Flutter 项目的依赖
+        run: |
+          git config --global core.longpaths true
+          flutter pub get
+
+      - name: Build Android
+        # 根据目标平台构建应用
+        if: matrix.target == 'Android'
+        run: |
+         flutter build apk --release --split-per-abi
+         
+      # - name: Build iOS
+      #   if: matrix.target == 'iOS'
+      #   run: |
+      #     cd ios
+      #     pod install
+      #     cd ..
+      #     flutter build ios --release --no-codesign
+      #     cd build/ios/iphoneos
+
+      - name: Upload Artifacts
+        # 上传构建生成的安装包
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
