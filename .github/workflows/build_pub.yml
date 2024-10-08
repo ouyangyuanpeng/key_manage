@@ -50,7 +50,7 @@ jobs:
 
       - name: Upload Artifacts
         # 上传构建生成的安装包
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: flutter-build
           # 指定上传的文件路径
