@@ -72,8 +72,7 @@ class _AddKeyState extends State<AddKey> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          '新增密码',
-          style: TextStyle(color: Colors.white),
+          '新增密码'
         ),
       ),
       body: Center(
