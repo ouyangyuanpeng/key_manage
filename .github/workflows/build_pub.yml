@@ -33,6 +33,11 @@ jobs:
       FLUTTER_VERSION: 3.24.3
 
     steps:
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 10
+
       - name: Clone repository
         # 检出当前仓库的代码
         uses: actions/checkout@v3
