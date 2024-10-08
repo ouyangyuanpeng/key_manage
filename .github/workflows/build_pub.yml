@@ -68,14 +68,15 @@ jobs:
         if: matrix.target == 'Android'
         run: |
          flutter build apk --release --split-per-abi
-      - name: Build iOS
-        if: matrix.target == 'iOS'
-        run: |
-          cd ios
-          pod install
-          cd ..
-          flutter build ios --release --no-codesign
-          cd build/ios/iphoneos
+         
+      # - name: Build iOS
+      #   if: matrix.target == 'iOS'
+      #   run: |
+      #     cd ios
+      #     pod install
+      #     cd ..
+      #     flutter build ios --release --no-codesign
+      #     cd build/ios/iphoneos
 
       - name: Upload Artifacts
         # 上传构建生成的安装包
