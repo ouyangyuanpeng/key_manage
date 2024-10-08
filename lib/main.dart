@@ -33,7 +33,8 @@ class MyApp extends StatelessWidget {
         ],
         locale: const Locale('zh', 'CN'),
         theme: ThemeData(
-          colorSchemeSeed: Color(0xff6750a4),
+          // 采用随机种子生成主题配色
+          colorSchemeSeed: const Color(0xff6750a4),
           // 设置默认文本颜色为
         ),
         // 路由
