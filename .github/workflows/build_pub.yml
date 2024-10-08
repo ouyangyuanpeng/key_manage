@@ -14,6 +14,8 @@ jobs:
     strategy:
       matrix:
         platform: [android, ios]  # 定义构建的目标平台
+    env:
+      FLUTTER_VERSION: 3.24.3
 
     steps:
       - name: Clone repository
@@ -31,7 +33,8 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
            channel: stable
-           flutter-version-file: pubspec.yaml # path to pubspec.yaml
+           flutter-version: ${{ env.FLUTTER_VERSION }}
+           cache: true
       - run: flutter --version
 
       - name: Flutter pub get
