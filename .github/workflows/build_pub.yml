@@ -1,105 +1,59 @@
-name: Build & Release
+name: Build Flutter App
 
 on:
+  # 当代码推送到 main 分支时触发工作流
   push:
     branches:
-      - '**'
-    tags:
-      - v*
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: true
+      - main
 
 jobs:
-  Build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: Android
-            os: ubuntu-latest
-            artifact_name: release-Android
-            artifact_path: build/app/outputs/apk/release/*.apk
-          - target: iOS
-            os: macos-latest
-            cache_pod_key: ios-pods
-            cache_pod_path: ios/Pods
-            cache_pod_restore_keys_hash_file: ios/Podfile.lock
-            artifact_name: release-iOS
-            artifact_path: build/**/*.ipa
+  build:
+    # 在最新的 Ubuntu 环境中运行构建
+    runs-on: ubuntu-latest
 
-    runs-on: ${{ matrix.os }}
-    env:
-      FLUTTER_VERSION: 3.24.3
+    strategy:
+      matrix:
+        platform: [android, ios]  # 定义构建的目标平台
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Flutter
+      - name: Clone repository
+        # 检出当前仓库的代码
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        # 设置 Java 开发工具包（JDK），用于 Android 构建
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'  # 使用 Java 11
+
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          flutter-version-file: pubspec.yaml # path to pubspec.yaml
-          cache: true
+           channel: stable
+           flutter-version-file: pubspec.yaml # path to pubspec.yaml
+      - run: flutter --version
 
-      - name: Flutter Pub Get
+      - name: Flutter pub get
+        # 获取 Flutter 项目的依赖
         run: |
+          git config --global core.longpaths true
           flutter pub get
 
-      - name: Get app version
-        id: get_version
+      - name: Build ${{ matrix.platform }} app
+        # 根据目标平台构建应用
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Build Android
-        if: matrix.target == 'Android'
-        run: |
-          flutter build apk --release --split-per-abi
-          cd build/app/outputs/apk/release
-          mv app-arm64-v8a-release.apk KeyManage-${{ env.VERSION }}-arm64-v8a.apk
-          mv app-armeabi-v7a-release.apk KeyManage-${{ env.VERSION }}-armeabi-v7a.apk
-          mv app-x86_64-release.apk KeyManage-${{ env.VERSION }}-x86_64.apk
-
-      - name: Build iOS
-        if: matrix.target == 'iOS'
-        run: |
-          cd ios
-          pod install
-          cd ..
-          flutter build ios --release --no-codesign
-          cd build/ios/iphoneos
-          zip -r KeyManage_${{ env.VERSION }}.ipa *.app
+          if [ "${{ matrix.platform }}" == "android" ]; then
+            flutter build apk --release  # 构建 Android APK
+          else
+            flutter build ios --release  # 构建 iOS 应用
+          fi
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        # 上传构建生成的安装包
+        uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_path }}
-
-  Publish:
-    if: startsWith(github.ref, 'refs/tags/')
-    name: Publish
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Make tmp dir
-        run: mkdir /tmp/artifacts
-      - name: Download all Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: /tmp/artifacts
-      - name: List all Artifacts
-        run: ls -R /tmp/artifacts
-      - name: Upload to release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ github.ref_name }}
-          allowUpdates: true
-          bodyFile: changelog/${{ github.ref_name }}.md
-          artifacts: /tmp/artifacts/release-Android/*.apk,/tmp/artifacts/release-iOS/*.ipa
-          artifactErrorsFailBuild: true
-          replacesArtifacts: true
+          name: flutter-build
+          # 指定上传的文件路径
+          path: |
+            build/app/outputs/apk/release/app-release.apk  # Android APK
+            build/ios/iphoneos/*.ipa  # iOS IPA，确保在 macOS 上构建时生成
